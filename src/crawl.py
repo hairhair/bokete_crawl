@@ -7,10 +7,18 @@ from bs4 import BeautifulSoup
 from io import BytesIO
 from time import sleep
 import os
+import pickle
 
 PAGE_DIR = "https://bokete.jp"
 ROOT_DIR = "https://bokete.jp/boke/legend"
-PAGE_NUM = 5 # とりあえず
+PAGE_NUM = 1 # とりあえず
+
+"""
+Todo
+調査した結果, https://bokete.jp/odai/{6桁の数字} (e.g. 009000)
+でお題が取ってこれる。これで100以上星がついてるbokeがあればcrawlするようにしたほうがいいかも
+"""
+
 
 def save_image(boke):
     img_dir = "https:" + boke.find("img").get("src")
@@ -60,6 +68,7 @@ def crawl_one_boke(soup):
     }
 
 def crawl_bokete():
+    captions = []
     for page_num in range(PAGE_NUM):
         if page_num == 0:
             req = requests.get(ROOT_DIR)
@@ -70,8 +79,11 @@ def crawl_bokete():
             req = requests.get(page_dir)
             soup = BeautifulSoup(req.text, "lxml")
             out = crawl_one_boke(soup)
+        captions.append(out)
         sleep(1)
-    print("done") 
+    print("done")
+    with open("../data/cations/crawled_captions.pkl", "wb") as f:
+        pickle.dump(captions, f)
 
 if __name__ == "__main__":
     crawl_bokete()
