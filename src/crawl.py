@@ -6,22 +6,21 @@ from PIL import Image
 from bs4 import BeautifulSoup
 from io import BytesIO
 from time import sleep
+from tqdm import tqdm
 import os
 import pickle
 
-PAGE_DIR = "https://bokete.jp"
-ROOT_DIR = "https://bokete.jp/boke/legend"
-PAGE_NUM = 1 # とりあえず
+ROOT_DIR = "https://bokete.jp/odai"
+ODAI_NUM = 500000 # 50万件
 
 """
 Todo
-調査した結果, https://bokete.jp/odai/{6桁の数字} (e.g. 009000)
+調査した結果, https://bokete.jp/odai/数字 (max. 5,076,872)
 でお題が取ってこれる。これで100以上星がついてるbokeがあればcrawlするようにしたほうがいいかも
 """
 
-
-def save_image(boke):
-    img_dir = "https:" + boke.find("img").get("src")
+def save_image(soup):
+    img_dir = "https:" + soup.find_all("div", attrs={"class" : "photo-content"})[0].find("img").get("src")
     img_binary = requests.get(img_dir)
     if img_binary.status_code is 200:
         image = Image.open(BytesIO(img_binary.content))
@@ -31,22 +30,23 @@ def save_image(boke):
     else:
         return False
 
+def is_star_over_100(soup):
+    # 評価順に元からsortされているので, 一番最初のbokeのみと比較するだけで良い
+    star_num = int(soup.find_all("div", attrs={"class": "boke"})[1]
+                   .find_all("div", attrs={"class" : "boke-stars"})[0].text.strip())
+    if star_num >= 100:
+        return True
+    else:
+        return False
+
 def crawl_one_boke(soup):
     # bokeのdivを抽出
-    for boke in soup.find_all("div", attrs={"class": "boke"}):
-        # 画像の保存
-        is_saved = save_image(boke)
-        # 対応するボケの保存
+    if is_star_over_100(soup):
+        is_saved = save_image(soup)
         meta_information = []
         caption_with_stars = []
-
         if is_saved:
-            href = boke.find("a").get("href")
-            odai_dir = PAGE_DIR + href
-            req = requests.get(odai_dir)
-            odai_soup = BeautifulSoup(req.text, "lxml")
-            # 最初の<div class="boke">はお題
-            for b_i, boke in enumerate(odai_soup.find_all("div", attrs={"class": "boke"})):
+            for b_i, boke in enumerate(soup.find_all("div", attrs={"class": "boke"})):
                 if b_i == 0:
                     meta_infos = boke.find_all("a", attrs={"class": "btn btn-sm btn-default"})
                     # そのお題についたメタ情報の抽出
@@ -62,24 +62,26 @@ def crawl_one_boke(soup):
                         "star_num" : star_num,
                         "caption" : boke_text
                     })
-    return {
-        "meta_info" : meta_information,
-        "captions" : caption_with_stars
-    }
+            img_id = soup.find_all("div", attrs={"class" : "photo-content"})[0].find("img").get("src").replace("//", "").split("/")[-1]
+            return {
+                "meta_info" : meta_information,
+                "captions" : caption_with_stars,
+                "filename" : img_id
+                }
+        else:
+            return None
 
 def crawl_bokete():
     captions = []
-    for page_num in range(PAGE_NUM):
-        if page_num == 0:
-            req = requests.get(ROOT_DIR)
+    for odai_num in tqdm(range(ODAI_NUM)):
+        page_dir = os.path.join(ROOT_DIR, str(odai_num+1))
+        req = requests.get(page_dir)
+        if req.status_code is 200:
             soup = BeautifulSoup(req.text, "lxml")
             out = crawl_one_boke(soup)
-        else:
-            page_dir = os.path.join(ROOT_DIR, "?page=" + str(page_num+1))
-            req = requests.get(page_dir)
-            soup = BeautifulSoup(req.text, "lxml")
-            out = crawl_one_boke(soup)
-        captions.append(out)
+            if out is not None:
+                out["odai_num"] = odai_num
+                captions.append(out)
         sleep(1)
     print("done")
     with open("../data/cations/crawled_captions.pkl", "wb") as f:
