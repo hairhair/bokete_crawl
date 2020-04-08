@@ -38,8 +38,12 @@ def save_image(soup):
 
 def is_star_over_100(soup):
     # 評価順に元からsortされているので, 一番最初のbokeのみと比較するだけで良い
-    star_num = int(soup.find_all("div", attrs={"class": "boke"})[1]
-                   .find_all("div", attrs={"class" : "boke-stars"})[0].text.strip())
+    try:
+        top_boke = soup.find_all("div", attrs={"class": "boke"})[1]
+    except IndexError:
+        return False    # 1つもボケのないお題
+    star_num = int(top_boke.find_all("div", attrs={"class": "boke-stars"})[0]
+                   .text.strip())
     if star_num >= 100:
         return True
     else:
