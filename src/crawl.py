@@ -84,7 +84,9 @@ def crawl_one_boke(soup):
 
 
 def crawl_bokete():
-    for odai_num in tqdm(range(1, ODAI_NUM + 1)):
+    pbar = tqdm(range(1, ODAI_NUM + 1))
+    for odai_num in pbar:
+        pbar.set_description(f'boke/{odai_num}')
         odai_dump_path = DATA_DIR / f'captions/{odai_num}.pkl'
         if odai_dump_path.exists():
             continue    # 保存済みのお題をスキップ
