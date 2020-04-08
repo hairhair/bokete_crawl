@@ -84,7 +84,7 @@ def crawl_bokete():
                 captions.append(out)
         sleep(1)
     print("done")
-    with open("../data/cations/crawled_captions.pkl", "wb") as f:
+    with open("../data/captions/crawled_captions.pkl", "wb") as f:
         pickle.dump(captions, f)
 
 if __name__ == "__main__":
