@@ -84,7 +84,6 @@ def crawl_one_boke(soup):
 
 
 def crawl_bokete():
-    captions = []
     for odai_num in tqdm(range(1, ODAI_NUM + 1)):
         odai_dump_path = DATA_DIR / f'captions/{odai_num}.pkl'
         if odai_dump_path.exists():
@@ -96,7 +95,6 @@ def crawl_bokete():
             out = crawl_one_boke(soup)
             if out is not None:
                 out["odai_num"] = odai_num
-                captions.append(out)
                 with open(odai_dump_path, "wb") as f:
                     pickle.dump(out, f)
         sleep(1)
