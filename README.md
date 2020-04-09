@@ -1,7 +1,11 @@
 # bokete_crawl
+
 Boketeのクローリング
 
 # Usage
+
 ```
-script/download.sh
+$ poetry lock
+$ poetry install
+$ scrapy crawl odai -o bokete.jl --logfile=log.txt --loglevel=INFO
 ```
