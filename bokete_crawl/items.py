@@ -8,7 +8,14 @@
 import scrapy
 
 
-class BoketeCrawlItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
+class Odai(scrapy.Item):
+    url = scrapy.Field()
+    img_src = scrapy.Field()
+    top_boke = scrapy.Field()
+    pass
+
+
+class Boke(scrapy.Item):
+    text = scrapy.Field()
+    star = scrapy.Field()
     pass
