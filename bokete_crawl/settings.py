@@ -88,3 +88,6 @@ HTTPCACHE_ENABLED = True
 HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+# The encoding to be used for the feed.
+FEED_EXPORT_ENCODING = 'utf-8'
