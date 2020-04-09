@@ -1,1 +1,5 @@
 data
+
+# virtual env
+venv
+.venv
