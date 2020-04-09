@@ -43,7 +43,7 @@ def is_star_over_100(soup):
     except IndexError:
         return False    # 1つもボケのないお題
     star_num = int(top_boke.find_all("div", attrs={"class": "boke-stars"})[0]
-                   .text.strip())
+                   .text.strip().replace(',', ''))
     if star_num >= 100:
         return True
     else:
