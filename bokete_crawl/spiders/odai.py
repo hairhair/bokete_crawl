@@ -21,40 +21,28 @@ class OdaiSpider(scrapy.Spider):
     def parse(self, response):
         if response.status != 200:
             return
-        soup = BeautifulSoup(response.body, 'lxml')
-        for odai in self.parse_odai(response):
-            yield odai
-            pass
+        odai = self.parse_odai(response)
+        odai['bokes'] = [boke for boke in self.parse_boke(response)]
+        return odai
 
     def parse_odai(self, response):
         soup = BeautifulSoup(response.body, 'lxml')
         img_src = find_img_src(soup)
-        yield Odai(
+        return Odai(
             number=response.url.split('/')[-1],
-            img_src=img_src,
-            top_boke=find_top_boke(soup)
+            img_src=img_src
         )
 
-
-def find_top_boke(soup):
-    boke_elements = soup.find_all('div', attrs={'class': 'boke'})
-    if len(boke_elements) < 2:
-        return None     # 1つもボケのないお題
-    top_boke = boke_elements[1]
-    return Boke(
-        star=find_boke_star(top_boke),
-        text=find_boke_text(top_boke)
-    )
-
-
-def find_boke_star(soup) -> int:
-    star_num = int(soup.find_all('div', attrs={'class': 'boke-stars'})[0]
-                   .text.strip().replace(',', ''))
-    return star_num
-
-
-def find_boke_text(soup) -> str:
-    return soup.find("a", attrs={"class": "boke-text"}).text.strip()
+    def parse_boke(self, response):
+        for boke in response.xpath('//div[@id="content"]/div[@class="boke"]'):
+            text = boke.xpath('a[@class="boke-text"]/div/text()').get().strip()
+            star = boke.xpath(
+                    './/div[@class="boke-stars"]/a/text()'
+                ).getall()[1].strip()
+            number = boke.xpath(
+                    'a[@class="boke-text"]/@href'
+                ).get().split('/')[-1]
+            yield Boke(text=text, star=star, number=number)
 
 
 def find_img_src(soup):
@@ -62,12 +50,3 @@ def find_img_src(soup):
               + soup.find('div', attrs={'class': 'photo-content'}) \
                     .find('img').get('src')
     return img_src
-
-
-def find_max_boke_star(soup):
-    # 評価順に元からsortされているので, 一番最初のbokeのみと比較するだけで良い
-    boke_elements = soup.find_all('div', attrs={'class': 'boke'})
-    if len(boke_elements) == 1:
-        return None     # 1つもボケのないお題
-    top_boke = boke_elements[1]
-    return find_boke_star(top_boke)
