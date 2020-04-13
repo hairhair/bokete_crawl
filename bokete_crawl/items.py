@@ -9,7 +9,7 @@ import scrapy
 
 
 class Odai(scrapy.Item):
-    url = scrapy.Field()
+    number = scrapy.Field()
     img_src = scrapy.Field()
     top_boke = scrapy.Field()
     pass

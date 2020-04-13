@@ -30,7 +30,7 @@ class OdaiSpider(scrapy.Spider):
         soup = BeautifulSoup(response.body, 'lxml')
         img_src = find_img_src(soup)
         yield Odai(
-            url=response.url,
+            number=response.url.split('/')[-1],
             img_src=img_src,
             top_boke=find_top_boke(soup)
         )
