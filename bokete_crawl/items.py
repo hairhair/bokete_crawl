@@ -11,11 +11,12 @@ import scrapy
 class Odai(scrapy.Item):
     number = scrapy.Field()
     img_src = scrapy.Field()
-    top_boke = scrapy.Field()
+    bokes = scrapy.Field()
     pass
 
 
 class Boke(scrapy.Item):
     text = scrapy.Field()
     star = scrapy.Field()
+    number = scrapy.Field()
     pass
