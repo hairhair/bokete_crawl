@@ -14,6 +14,7 @@ BOT_NAME = 'bokete_crawl'
 SPIDER_MODULES = ['bokete_crawl.spiders']
 NEWSPIDER_MODULE = 'bokete_crawl.spiders'
 
+MIN_ODAI_STAR = 100
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'bokete_crawl (+http://www.yourdomain.com)'
