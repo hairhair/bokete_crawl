@@ -15,7 +15,7 @@ class OdaiSpider(scrapy.Spider):
     name = 'odai'
     allowed_domains = ['bokete.jp/odai']
     start_urls = [
-        f'https://bokete.jp/odai/{odai_id}' for odai_id in range(1, 500000)
+        f'https://bokete.jp/odai/{odai_id}' for odai_id in range(1, 5000000)
     ]
 
     def parse(self, response):
@@ -30,15 +30,16 @@ class OdaiSpider(scrapy.Spider):
         img_src = find_img_src(soup)
         return Odai(
             number=response.url.split('/')[-1],
-            img_src=img_src
+            image_urls=[img_src]
         )
 
     def parse_boke(self, response):
         for boke in response.xpath('//div[@id="content"]/div[@class="boke"]'):
             text = boke.xpath('a[@class="boke-text"]/div/text()').get().strip()
-            star = boke.xpath(
+            star_str = boke.xpath(
                     './/div[@class="boke-stars"]/a/text()'
-                ).getall()[1].strip()
+                ).getall()[1].strip().replace(',', '')
+            star = int(star_str)
             number = boke.xpath(
                     'a[@class="boke-text"]/@href'
                 ).get().split('/')[-1]
