@@ -23,7 +23,11 @@ class OdaiSpider(scrapy.Spider):
             return
         odai = self.parse_odai(response)
         odai['bokes'] = [boke for boke in self.parse_boke(response)]
-        return odai
+        if not odai['bokes']:
+            return  # skip odai which has no boke
+        odai_star = odai['bokes'][0]['star']
+        if odai_star >= self.settings['MIN_ODAI_STAR']:
+            return odai
 
     def parse_odai(self, response):
         soup = BeautifulSoup(response.body, 'lxml')
